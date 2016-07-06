@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">myAuditor</string>
+    <string name="date_picker_title">Date of Transction</string>
+</resources>
