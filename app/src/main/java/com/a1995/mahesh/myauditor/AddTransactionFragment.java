@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -117,8 +116,7 @@ public class AddTransactionFragment extends Fragment {
         } else if (requestCode == REQUEST_DATE) {
             String dateFormant = "yyyy-MM-dd";
             mDAte = (Date) intent.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
-            String dateString = DateFormat.
-                    format(dateFormant, mDAte).toString();
+            String dateString = DatabaseLab.getDateInFormat(dateFormant, mDAte);
             mDateTextView.setText(dateString);
         } else if (requestCode == REQUEST_CATEGORY) {
             mCategory = (String) intent.getSerializableExtra(CategoryListFragment.EXTRA_CATEGORY);
@@ -126,7 +124,6 @@ public class AddTransactionFragment extends Fragment {
             mCategoryTextView.setText(mSubCategory);
         }
     }
-
 
     private void goToMainActivity() {
         Intent intent = MainActivity.newIntent(getActivity());
@@ -145,8 +142,8 @@ public class AddTransactionFragment extends Fragment {
         if (mDAte == null || amount == 0 || amount == null) {
             return;
         }
-
-        Transaction transaction = new Transaction(mDAte, amount, mCategory, mSubCategory, wallet, noteString);
+        String month = DatabaseLab.getDateInFormat("yyyy-MM", mDAte);
+        Transaction transaction = new Transaction(mDAte, month, amount, mCategory, mSubCategory, wallet, noteString);
         DatabaseLab.get(getActivity()).addTransaction(transaction);
     }
 }

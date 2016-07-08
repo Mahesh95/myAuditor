@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.format.DateFormat;
 
 import com.a1995.mahesh.myauditor.database.DatabaseHelper;
 import com.a1995.mahesh.myauditor.database.Schema;
@@ -11,6 +12,7 @@ import com.a1995.mahesh.myauditor.database.TransactionCursorWrapper;
 import com.a1995.mahesh.myauditor.database.WalletCursorWrapper;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,6 +49,14 @@ public class DatabaseLab {
     }
 
     /**
+     * this method returns a date string in required format
+     */
+
+    public static String getDateInFormat(String dateFormat, Date date) {
+        return DateFormat.format(dateFormat, date).toString();
+    }
+
+    /**
      * this method loads all wallets in mWallets
      */
     private void loadWallets() {
@@ -80,7 +90,6 @@ public class DatabaseLab {
                 null);
         return new WalletCursorWrapper(cursor);
     }
-
 
     /**
      * this method loads all transactions in mTransactions
@@ -135,9 +144,10 @@ public class DatabaseLab {
         ContentValues contentValues = new ContentValues();
         contentValues.put(Schema.TransactionTable.Cols.ID, transaction.getId().toString());
         contentValues.put(Schema.TransactionTable.Cols.DATE, transaction.getDate().getTime());
+        contentValues.put(Schema.TransactionTable.Cols.MONTH, transaction.getMonth());
         contentValues.put(Schema.TransactionTable.Cols.AMOUNT, transaction.getAmount());
         contentValues.put(Schema.TransactionTable.Cols.CATEGORY, transaction.getCategory());
-        contentValues.put(Schema.TransactionTable.Cols.SUBCATEGORY, transaction.getCategory());
+        contentValues.put(Schema.TransactionTable.Cols.SUBCATEGORY, transaction.getSubCategory());
         contentValues.put(Schema.TransactionTable.Cols.WALLET, transaction.getWallet());
         contentValues.put(Schema.TransactionTable.Cols.NOTE, transaction.getNote());
         return contentValues;
@@ -192,6 +202,54 @@ public class DatabaseLab {
             return subCategories;
         } else
             return null;
+    }
 
+    public List<String> getMonthsList() {
+        Cursor cursor = mDatabase.query(true, Schema.TransactionTable.NAME,
+                new String[]{Schema.TransactionTable.Cols.MONTH},
+                null,
+                null,
+                null,
+                null,
+                Schema.TransactionTable.Cols.MONTH,
+                null);
+        List<String> monthsList = new ArrayList<>();
+
+        try {
+            if (cursor.getCount() != 0) {
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast()) {
+                    monthsList.add(cursor.getString(cursor.getColumnIndex(Schema.TransactionTable.Cols.MONTH)));
+                    cursor.moveToNext();
+                }
+                return monthsList;
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
+    /**
+     * this function returns a list of transactions in a given month
+     */
+
+    public List<Transaction> getTransactionsFromMonth(String month) {
+        List<Transaction> monthlyTransactions = new ArrayList<>();
+        TransactionCursorWrapper cursor = queryTransactionTable(Schema.TransactionTable.Cols.MONTH + " =?", new String[]{month});
+        try {
+            if (cursor.getCount() != 0) {
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast()) {
+                    monthlyTransactions.add(cursor.getTransaction());
+                    cursor.moveToNext();
+                }
+                return monthlyTransactions;
+            }
+        } finally {
+            cursor.close();
+        }
+
+        return null;
     }
 }

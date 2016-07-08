@@ -21,11 +21,12 @@ public class TransactionCursorWrapper extends CursorWrapper {
         String uuidString = getString(getColumnIndex(Schema.TransactionTable.Cols.ID));
         float amount = getFloat(getColumnIndex(Schema.TransactionTable.Cols.AMOUNT));
         long date = getLong(getColumnIndex(Schema.TransactionTable.Cols.DATE));
+        String month = getString(getColumnIndex(Schema.TransactionTable.Cols.MONTH));
         String category = getString(getColumnIndex(Schema.TransactionTable.Cols.CATEGORY));
         String subCategory = getString(getColumnIndex(Schema.TransactionTable.Cols.SUBCATEGORY));
         String wallet = getString(getColumnIndex(Schema.TransactionTable.Cols.WALLET));
         String note = getString(getColumnIndex(Schema.TransactionTable.Cols.NOTE));
 
-        return new Transaction(UUID.fromString(uuidString), new Date(date), amount, category, subCategory, wallet, note);
+        return new Transaction(UUID.fromString(uuidString), new Date(date), month, amount, category, subCategory, wallet, note);
     }
 }

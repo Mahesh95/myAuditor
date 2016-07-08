@@ -27,6 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " (_id integer primary key autoincrement," +
                 Schema.TransactionTable.Cols.ID + "," +
                 Schema.TransactionTable.Cols.DATE + "," +
+                Schema.TransactionTable.Cols.MONTH + "," +
                 Schema.TransactionTable.Cols.AMOUNT + "," +
                 Schema.TransactionTable.Cols.CATEGORY + "," +
                 Schema.TransactionTable.Cols.SUBCATEGORY + "," +

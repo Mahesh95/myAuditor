@@ -29,13 +29,20 @@ import java.util.List;
  */
 public class MonthPageFragment extends Fragment {
 
+    private static final String TAG = "MPF running";
+    private static final String ARG_MONTH = "month";
     private List<Wallet> mWallets;
     private RecyclerView mTransactionsRecyclerView;
     private FloatingActionButton addTransactionButton;
     private String selectedWallet;
+    private TransactionAdapter mAdapter;
 
-    public static MonthPageFragment newInstance() {
-        return new MonthPageFragment();
+    public static MonthPageFragment newInstance(String monthString) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_MONTH, monthString);
+        MonthPageFragment fragment = new MonthPageFragment();
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -64,7 +71,31 @@ public class MonthPageFragment extends Fragment {
                 startActivity(intent);
             }
         });
+
+        updateUI();
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
+    private void updateUI() {
+        List<Transaction> transactions;
+        String month = getArguments().getString(ARG_MONTH);
+        if (month == null) {
+            return;
+        }
+        transactions = DatabaseLab.get(getActivity()).getTransactionsFromMonth(month);
+        if (mAdapter == null) {
+            mAdapter = new TransactionAdapter(transactions);
+            mTransactionsRecyclerView.setAdapter(mAdapter);
+        } else {
+            mAdapter.setTransactions(transactions);
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -106,9 +137,53 @@ public class MonthPageFragment extends Fragment {
     }
 
     private class TransactionHolder extends RecyclerView.ViewHolder {
+        private TextView mTransactionDate;
+        private TextView mTransactionAmount;
+        private TextView mTransactionCategory;
+        private TextView mTransactionNote;
 
         public TransactionHolder(View itemView) {
             super(itemView);
+            mTransactionDate = (TextView) itemView.findViewById(R.id.transaction_card_date);
+            mTransactionAmount = (TextView) itemView.findViewById(R.id.transaction_card_amount);
+            mTransactionCategory = (TextView) itemView.findViewById(R.id.transaction_card_category);
+            mTransactionNote = (TextView) itemView.findViewById(R.id.transaction_card_note);
+        }
+
+        public void bindTransaction(Transaction transaction) {
+            mTransactionDate.setText(DatabaseLab.getDateInFormat("yyyy-MM-dd", transaction.getDate()));
+            mTransactionCategory.setText(transaction.getSubCategory());
+            mTransactionAmount.setText(transaction.getAmount().toString());
+            mTransactionNote.setText(transaction.getNote());
+        }
+    }
+
+    private class TransactionAdapter extends RecyclerView.Adapter<TransactionHolder> {
+        private List<Transaction> mTransactions;
+
+        public TransactionAdapter(List<Transaction> transactions) {
+            mTransactions = transactions;
+        }
+
+        @Override
+        public TransactionHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(getActivity()).inflate(R.layout.transaction_recycler_view_item, parent, false);
+            return new TransactionHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(TransactionHolder holder, int position) {
+            Transaction transaction = mTransactions.get(position);
+            holder.bindTransaction(transaction);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mTransactions.size();
+        }
+
+        private void setTransactions(List<Transaction> transactions) {
+            mTransactions = transactions;
         }
     }
 }

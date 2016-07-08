@@ -10,6 +10,7 @@ import java.util.UUID;
 public class Transaction {
     private UUID mId;
     private Date mDate;
+    private String mMonth;
     private Float mAmount;
     private String mCategory;
     private String mSubCategory;
@@ -17,13 +18,14 @@ public class Transaction {
     private String mNote;
 
     // this constructor is used when creating a new transaction object
-    public Transaction(Date date, Float amount, String category, String subCategory, String wallet, String note) {
-        this(UUID.randomUUID(), date, amount, category, subCategory, wallet, note);
+    public Transaction(Date date, String month, Float amount, String category, String subCategory, String wallet, String note) {
+        this(UUID.randomUUID(), date, month, amount, category, subCategory, wallet, note);
     }
 
     //this constructor is used when creating a transaction object from a transactionTable row
-    public Transaction(UUID id, Date date, Float amount, String category, String subCategory, String wallet, String note) {
+    public Transaction(UUID id, Date date, String month, Float amount, String category, String subCategory, String wallet, String note) {
         mDate = date;
+        mMonth = month;
         mId = id;
         mAmount = amount;
         mCategory = category;
@@ -59,5 +61,9 @@ public class Transaction {
 
     public String getSubCategory() {
         return mSubCategory;
+    }
+
+    public String getMonth() {
+        return mMonth;
     }
 }

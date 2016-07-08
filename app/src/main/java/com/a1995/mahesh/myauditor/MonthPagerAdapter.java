@@ -5,11 +5,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import java.util.List;
+
 /**
  * Created by mahesh on 24/6/16.
  */
 public class MonthPagerAdapter extends FragmentPagerAdapter {
-    private int pageCount = 10;
+
+    List<String> mMonthList;
     private Context mContext;
 
     public MonthPagerAdapter(FragmentManager fm, Context context) {
@@ -19,16 +22,31 @@ public class MonthPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return MonthPageFragment.newInstance();
+        if (mMonthList == null) {
+            return MonthPageFragment.newInstance(null);
+        }
+        return MonthPageFragment.newInstance(mMonthList.get(position));
     }
 
     @Override
     public int getCount() {
-        return pageCount;
+        if (mMonthList == null) {
+            return 1;
+        } else {
+            return mMonthList.size();
+        }
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return "This Month";
+        if (mMonthList == null) {
+            return "This Month";
+        } else {
+            return mMonthList.get(position);
+        }
+    }
+
+    public void setMonthsList(List<String> monthList) {
+        mMonthList = monthList;
     }
 }

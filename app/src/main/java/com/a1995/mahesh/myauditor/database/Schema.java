@@ -10,6 +10,7 @@ public class Schema {
 
         public static final class Cols {
             public static final String DATE = "date";
+            public static final String MONTH = "month";
             public static final String ID = "transaction_id";
             public static final String CATEGORY = "category";
             public static final String SUBCATEGORY = "subcategory";
