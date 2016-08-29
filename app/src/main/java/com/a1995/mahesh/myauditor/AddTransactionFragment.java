@@ -133,17 +133,33 @@ public class AddTransactionFragment extends Fragment {
     /**
      * this method extracts data from fields and creates a transaction object
      * Then the transaction object is written to the database
+     * The current balance of the wallet is also changed
      */
     private void saveTransaction() {
         Float amount = Float.valueOf(mAmountEditText.getText().toString());
         String noteString = mNoteEditText.getText().toString();
-        String wallet = getArguments().getSerializable(ARG_WALLET).toString();
+        String walletName = getArguments().getSerializable(ARG_WALLET).toString();
 
         if (mDAte == null || amount == 0 || amount == null) {
             return;
         }
         String month = DatabaseLab.getDateInFormat("yyyy-MM", mDAte);
-        Transaction transaction = new Transaction(mDAte, month, amount, mCategory, mSubCategory, wallet, noteString);
+        Transaction transaction = new Transaction(mDAte, month, amount, mCategory, mSubCategory, walletName, noteString);
         DatabaseLab.get(getActivity()).addTransaction(transaction);
+
+        //changing the current balance
+        Wallet wallet = DatabaseLab.get(getActivity()).getWallet(walletName);
+        float balance = wallet.getBalance();
+        float transactionAmount;
+
+        if (transaction.getCategory().equals("Expense") || transaction.getSubCategory().equals("Debt")) {
+            transactionAmount = -1 * transaction.getAmount();
+        } else {
+            transactionAmount = transaction.getAmount();
+        }
+
+        balance = balance + transactionAmount;
+        wallet.setBalance(balance);
+        DatabaseLab.get(getActivity()).updateWallet(wallet);
     }
 }

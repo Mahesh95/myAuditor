@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.format.DateFormat;
+import android.util.Log;
 
 import com.a1995.mahesh.myauditor.database.DatabaseHelper;
 import com.a1995.mahesh.myauditor.database.Schema;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 public class DatabaseLab {
 
+    private static final String TAG = "databaselab";
     private static DatabaseLab sDatabaseLab;
     private Context mContext;
     private List<Transaction> mTransactions; //stores all transactions
@@ -157,10 +159,20 @@ public class DatabaseLab {
      * this method writes the wallet object to the database
      */
     public void addWallet(Wallet wallet) {
+        ContentValues values = getWalletContentValues(wallet);
+        mDatabase.insert(Schema.WalletTable.NAME, null, values);
+    }
+
+    /**
+     * this method returns content values of a wallet object
+     */
+
+    private ContentValues getWalletContentValues(Wallet wallet) {
         ContentValues values = new ContentValues();
         values.put(Schema.WalletTable.Cols.NAME, wallet.getName());
         values.put(Schema.WalletTable.Cols.BALANCE, wallet.getBalance());
-        mDatabase.insert(Schema.WalletTable.NAME, null, values);
+
+        return values;
     }
 
     /**
@@ -173,6 +185,11 @@ public class DatabaseLab {
     /**
      * this method returns a list of all transactions
      */
+
+    public void updateWallet(Wallet wallet) {
+        ContentValues values = getWalletContentValues(wallet);
+        mDatabase.update(Schema.WalletTable.NAME, values, Schema.WalletTable.Cols.NAME + " =?", new String[]{wallet.getName()});
+    }
 
     public List<Transaction> getTransactions() {
         return mTransactions;
@@ -251,5 +268,23 @@ public class DatabaseLab {
         }
 
         return null;
+    }
+
+    /**
+     * returns a wallet object from the database
+     */
+    public Wallet getWallet(String walletName) {
+        WalletCursorWrapper cursor = queryWalletTable(Schema.WalletTable.Cols.NAME + " =?", new String[]{walletName});
+        try {
+            if (cursor.getCount() != 0) {
+                cursor.moveToFirst();
+                Log.i(TAG, "fucccck");
+                return cursor.getWallet();
+            } else {
+                return null;
+            }
+        } finally {
+            cursor.close();
+        }
     }
 }

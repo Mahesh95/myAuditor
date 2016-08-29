@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,8 +35,11 @@ public class MonthPageFragment extends Fragment {
     private List<Wallet> mWallets;
     private RecyclerView mTransactionsRecyclerView;
     private FloatingActionButton addTransactionButton;
-    private String selectedWallet;
+    private Wallet selectedWallet;
     private TransactionAdapter mAdapter;
+    private TextView mBalanceTextView;
+    private TextView mInflowTextView;
+    private TextView mOutflowTextView;
 
     public static MonthPageFragment newInstance(String monthString) {
         Bundle args = new Bundle();
@@ -67,10 +71,14 @@ public class MonthPageFragment extends Fragment {
         addTransactionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = AddTransactionActivity.newIntent(getActivity(), selectedWallet);
+                Intent intent = AddTransactionActivity.newIntent(getActivity(), selectedWallet.getName());
                 startActivity(intent);
             }
         });
+
+        mBalanceTextView = (TextView) view.findViewById(R.id.month_page_fragment_balance);
+        mInflowTextView = (TextView) view.findViewById(R.id.month_page_fragment_inflow);
+        mOutflowTextView = (TextView) view.findViewById(R.id.month_page_fragment_outflow);
 
         updateUI();
         return view;
@@ -96,6 +104,9 @@ public class MonthPageFragment extends Fragment {
             mAdapter.setTransactions(transactions);
             mAdapter.notifyDataSetChanged();
         }
+
+        mInflowTextView.setText(mAdapter.getInflow().toString());
+        mOutflowTextView.setText(mAdapter.getOutflow().toString());
     }
 
     @Override
@@ -120,7 +131,11 @@ public class MonthPageFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 ((TextView) adapterView.getChildAt(0)).setTextColor(Color.WHITE);
-                selectedWallet = ((TextView) adapterView.getChildAt(0)).getText().toString();
+                String walletString = ((TextView) adapterView.getChildAt(0)).getText().toString();
+                selectedWallet = DatabaseLab.get(getActivity()).getWallet(walletString);
+                mBalanceTextView.setText(String.format("%.2f", selectedWallet.getBalance()));
+                Log.i(TAG, "balance is:" + selectedWallet.getBalance());
+
             }
 
             @Override
@@ -184,6 +199,26 @@ public class MonthPageFragment extends Fragment {
 
         private void setTransactions(List<Transaction> transactions) {
             mTransactions = transactions;
+        }
+
+        public Float getInflow() {
+            Float inFlow = Float.valueOf(0);
+            for (Transaction transaction : mTransactions) {
+                if (transaction.getCategory().equals("Income") || transaction.getCategory().equals("Debt")) {
+                    inFlow += transaction.getAmount();
+                }
+            }
+            return inFlow;
+        }
+
+        public Float getOutflow() {
+            Float outflow = Float.valueOf(0);
+            for (Transaction transaction : mTransactions) {
+                if (transaction.getCategory().equals("Expense") || transaction.getSubCategory().equals("Loan")) {
+                    outflow += transaction.getAmount();
+                }
+            }
+            return outflow * (-1);
         }
     }
 }
